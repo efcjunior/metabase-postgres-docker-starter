@@ -1,0 +1,46 @@
+version: '3.9'
+services:
+  metabase:
+    image: metabase/metabase:latest
+    container_name: metabase
+    hostname: metabase
+    volumes:
+    - ~/metabase/metabase-data:/metabase-data
+    ports:
+      - 3000:3000
+    Environment:
+      MB_DB_FILE=/metabase-data/metabase.db
+      MB_DB_TYPE: postgres
+      MB_DB_DBNAME: metabase
+      MB_DB_PORT: 5432
+      MB_DB_USER_FILE: /run/secrets/db_user
+      MB_DB_PASS_FILE: /run/secrets/db_password
+      MB_DB_HOST: postgres-metabase
+    networks:
+      - metabasenet
+    depends_on:
+      - postgres-metabase
+    secrets:
+      - db_password
+      - db_user
+postgres-metabase:
+    image: postgres:latest
+    container_name: postgres-metabase
+    hostname: postgres-metabse
+    environment:
+      POSTGRES_USER_FILE: /run/secrets/db_user
+      POSTGRES_DB: metabase
+      POSTGRES_PASSWORD_FILE: /run/secrets/db_password
+    networks:
+      - metabasenet
+    secrets:
+      - db_password
+      - db_user
+networks:
+  metabasenet:
+    driver: bridge
+secrets:
+   db_password:
+     file: db_password.txt
+   db_user:
+     file: db_user.txt
